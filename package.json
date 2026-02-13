@@ -1,0 +1,63 @@
+{
+  "name": "cell-monitor",
+  "version": "1.0.0",
+  "description": "SQL Server Cell Monitor",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "npm run build && electron .",
+    "dev": "tsc && electron .",
+    "pack": "npm run build && electron-builder --dir",
+    "dist": "npm run build && electron-builder",
+    "dist:mac": "npm run build && electron-builder --mac",
+    "dist:win": "npm run build && electron-builder --win",
+    "dist:linux": "npm run build && electron-builder --linux"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "mssql": "^10.0.0"
+  },
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "@types/mssql": "^9.1.0",
+    "@types/node": "^20.10.0",
+    "dmg-builder": "^24.13.3",
+    "electron-builder": "^24.9.0",
+    "typescript": "^5.3.0"
+  },
+  "build": {
+    "appId": "com.cellmonitor.app",
+    "productName": "Cell Monitor",
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "category": "public.app-category.utilities",
+      "icon": "build/icon.icns"
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "build/icon.ico"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Utility"
+    },
+    "files": [
+      "dist/**/*",
+      "src/index.html",
+      "node_modules/**/*"
+    ],
+    "directories": {
+      "output": "release"
+    }
+  }
+}

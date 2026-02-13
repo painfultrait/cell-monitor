@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cell Monitor</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f5f5f5;
+      color: #333;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      background: #2c3e50;
+      color: white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .status {
+      padding: 6px 15px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 500;
+      margin-right: 20px;
+    }
+
+    .status.connected {
+      background: #27ae60;
+      color: white;
+    }
+
+    .status.disconnected {
+      background: #95a5a6;
+      color: white;
+    }
+
+    .tabs {
+      display: flex;
+    }
+
+    .tab {
+      padding: 15px 30px;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      font-weight: 500;
+      transition: all 0.2s;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .tab:hover {
+      color: white;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .tab.active {
+      color: white;
+      border-bottom-color: #3498db;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 30px;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .settings-form {
+      max-width: 600px;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #2c3e50;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      transition: border-color 0.2s;
+    }
+
+    input[type="text"]:focus,
+    input[type="password"]:focus {
+      outline: none;
+      border-color: #3498db;
+    }
+
+    input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+
+    button {
+      padding: 10px 25px;
+      border: none;
+      border-radius: 4px;
+      background: #3498db;
+      color: white;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-right: 10px;
+    }
+
+    button:hover:not(:disabled) {
+      background: #2980b9;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    button.disconnect {
+      background: #e74c3c;
+    }
+
+    button.disconnect:hover {
+      background: #c0392b;
+    }
+
+    .grid-container {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .cell {
+      aspect-ratio: 1.5;
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      border: 2px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .cell.free {
+      background: #2ecc71;
+      color: white;
+    }
+
+    .cell.occupied {
+      background: #e74c3c;
+      color: white;
+    }
+
+    .cell.unavailable {
+      background: #f39c12;
+      color: white;
+    }
+
+    .cell.unknown {
+      background: #95a5a6;
+      color: white;
+    }
+
+    .cell:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .cell-number {
+      font-size: 1.8em;
+      margin-bottom: 4px;
+    }
+
+    .cell-status {
+      font-size: 0.75em;
+      opacity: 0.9;
+      font-weight: 500;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 60px 20px;
+      color: #95a5a6;
+      font-size: 1.1em;
+      white-space: nowrap;
+    }
+
+    .stats {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      flex: 1;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .stat-label {
+      color: #7f8c8d;
+      font-size: 0.9em;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 2em;
+      font-weight: 600;
+      color: #2c3e50;
+    }
+
+    .stat-card.free .stat-value {
+      color: #27ae60;
+    }
+
+    .stat-card.occupied .stat-value {
+      color: #e74c3c;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="tabs">
+      <div class="tab active" data-tab="monitor">Мониторинг</div>
+      <div class="tab" data-tab="settings">Настройки</div>
+    </div>
+    <div class="status disconnected" id="status">Отключено</div>
+  </div>
+
+  <div class="content">
+    <div class="tab-content active" id="monitor-tab">
+      <div class="stats" id="stats" style="display: none;">
+        <div class="stat-card">
+          <div class="stat-label">Всего ячеек</div>
+          <div class="stat-value" id="totalCells">0</div>
+        </div>
+        <div class="stat-card free">
+          <div class="stat-label">Свободно</div>
+          <div class="stat-value" id="freeCells">0</div>
+        </div>
+        <div class="stat-card occupied">
+          <div class="stat-label">Занято</div>
+          <div class="stat-value" id="occupiedCells">0</div>
+        </div>
+      </div>
+
+      <div class="grid-container">
+        <div class="grid" id="grid">
+          <div class="loading">Подключитесь к базе данных для просмотра ячеек</div>
+        </div>
+      </div>
+    </div>
+
+
+<div class="tab-content" id="settings-tab">
+  <div class="settings-form">
+    <h2 style="margin-bottom: 25px; color: #2c3e50;">Подключение к базе данных</h2>
+    
+    <div id="errorMessage" style="display: none; padding: 15px; background: #fee; border: 1px solid #fcc; border-radius: 4px; margin-bottom: 20px; color: #c00;">
+      <strong>Ошибка подключения:</strong>
+      <div id="errorText" style="margin-top: 5px;"></div>
+    </div>
+    
+    <div class="form-group">
+      <label for="host">Хост</label>
+      <input type="text" id="host" placeholder="192.168.0.178\SQLEXPRESS" value="192.168.0.178\SQLEXPRESS">
+    </div>
+
+    <div class="form-group">
+      <label for="user">Пользователь</label>
+      <input type="text" id="user" placeholder="Имя пользователя" value="sa">
+    </div>
+
+    <div class="form-group">
+      <label for="password">Пароль</label>
+      <input type="password" id="password" placeholder="Пароль базы данных">
+    </div>
+
+    <div class="form-group">
+      <label for="database">База данных</label>
+      <input type="text" id="database" placeholder="Название базы данных">
+    </div>
+
+    <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
+      <input type="checkbox" id="saveSettings">
+      <label for="saveSettings" style="margin: 0; cursor: pointer;">Сохранить настройки</label>
+    </div>
+
+    <div style="margin-top: 30px;">
+      <button id="connectBtn">Подключиться</button>
+      <button class="disconnect" id="disconnectBtn" style="display: none;">Отключиться</button>
+    </div>
+  </div>
+</div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const tabs = document.querySelectorAll('.tab');
+      const tabContents = document.querySelectorAll('.tab-content');
+
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          const tabName = tab.getAttribute('data-tab');
+          
+          tabs.forEach(t => t.classList.remove('active'));
+          tabContents.forEach(c => c.classList.remove('active'));
+          
+          tab.classList.add('active');
+          document.getElementById(`${tabName}-tab`)?.classList.add('active');
+        });
+      });
+    });
+  </script>
+  <script src="../dist/renderer.js"></script>
+</body>
+</html>
