@@ -154,7 +154,7 @@ async function connectToDatabase() {
 
     console.log('Попытка подключения...');
     pool = await sql.connect(config);
-    console.log('✅ Успешно подключено!');
+    console.log('Успешно подключено!');
     
     saveSettings();
     
@@ -180,7 +180,7 @@ async function connectToDatabase() {
     refreshInterval = setInterval(loadCells, 2000);
     
   } catch (error) {
-    console.error('❌ Ошибка подключения:', error);
+    console.error('Ошибка подключения:', error);
     
     connectBtn.disabled = false;
     connectBtn.textContent = 'Подключиться';
@@ -238,7 +238,7 @@ async function loadCells() {
     updateStats(cells);
     
   } catch (error) {
-    console.error('❌ Ошибка загрузки:', error);
+    console.error('Ошибка загрузки:', error);
     statusDiv.textContent = `Ошибка: ${(error as Error).message}`;
     statusDiv.className = 'status disconnected';
   }
