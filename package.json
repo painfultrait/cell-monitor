@@ -54,6 +54,7 @@
     "files": [
       "dist/**/*",
       "src/index.html",
+      "src/assets/**/*",
       "node_modules/**/*"
     ],
     "directories": {
